@@ -30,7 +30,7 @@ config: dict = {
     'domain_name': '',
     'username': '',
     'password': '',
-    'debug': True
+    'debug': False
 }
 
 def main(config: dict) -> None:

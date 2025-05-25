@@ -8,9 +8,9 @@ def config_network(config: dict) -> Response:
     current_ipv4_config: dict = requests.get(current_ipv4_url, headers = ilo_headers, verify = False).json()
     ipv4_payload: dict = current_ipv4_config | {
         'dhcp_enabled': 0,
-        'ip_address': '100.102.57.33',
-        'subnet_mask': '255.255.255.0',
-        'gateway_ip_address': '100.102.57.1',
+        'ip_address': config['current_ip'],
+        'subnet_mask': config['subnet_mask'],
+        'gateway_ip_address': config['default_gateway'],
         "method": "set_ipv4",
         'session_key': token
     }
