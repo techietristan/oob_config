@@ -38,10 +38,11 @@ def main(config: dict) -> None:
     try:
         if not bool(config['current_ip']):
             prompt_for_config(config)
+            print(config)
         if not wait_for_ping(ilo_ip):
             if confirm(f'Unable to reach the iLO at {ilo_ip}. Do you want to try again?'):
                 return main(config)
-        if confirm(f'Push the following configuration? (y or n):\n {config}\n'): 
+        if confirm(f'Push the following configuration? (y or n):\n {config}\n'):
             login_response: Response = login(config)
             config_session(config, login_response)
             create_user(config)
