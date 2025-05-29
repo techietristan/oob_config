@@ -20,6 +20,14 @@ def prompt(
         password: bool = False, 
         default: str = '') -> str:
     user_input: str = input(prompt_text).strip() if not password else getpass(prompt_text).strip()
+    if bool(password):
+        password_confirm: str = getpass('Please enter the password again: ').strip()
+        if bool(user_input == password_confirm):
+            return user_input
+        else:
+            print('Passwords do not match, please try again.')
+            return prompt(prompt_text, password = True)
+        
     if user_input == '' and bool(default):
         return default
     if not bool(validate) or validate(user_input):
@@ -38,7 +46,7 @@ def prompt_for_config(config: dict) -> None:
         'Invalid IP, please try again.', validate = is_valid_ip).strip()
     config['current_hostname'] = prompt('Please enter the hostname to set for the iLO: ')
     config['subnet_mask'] = prompt(
-        'Please enter the subnet mask to set for the iLO: ',
+        'Please enter the subnet mask to set for the iLO (dotted decimal or CIDR format): ',
         'Invalid subnet mask, please try again.', 
         validate = is_valid_subnet_mask, 
         formatter = get_subnet_mask)
@@ -50,5 +58,4 @@ def prompt_for_config(config: dict) -> None:
         default = gateway_guess)
     config['domain_name'] = prompt('Please enter the domain name to set for the iLO: ')
     config['username'] = prompt('Please enter the username to set for the iLO: ')
-    #todo: password confirm
     config['password'] = prompt('Please enter the password to set for the iLO: ', password = True)
