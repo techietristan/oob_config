@@ -59,3 +59,14 @@ def prompt_for_config(config: dict) -> None:
     config['domain_name'] = prompt('Please enter the domain name to set for the iLO: ')
     config['username'] = prompt('Please enter the username to set for the iLO: ')
     config['password'] = prompt('Please enter the password to set for the iLO: ', password = True)
+
+def confirm_config(config: dict) -> bool:
+    print(f'\nDo you want to push the following config to the currently connected iLO?\n\n\t',
+    f'Static IP: {config['current_ip']}\n\t',
+    f'Hostname: {config['current_hostname']}\n\t',
+    f'Subnet Mask: {config['subnet_mask']}\n\t',
+    f'Default Gateway: {config['default_gateway']}\n\t',
+    f'Domain: {config['domain_name']}\n\t',
+    f'Username: {config['username']}\n\t')
+    
+    return confirm('(y or n): ')

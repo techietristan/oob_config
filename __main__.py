@@ -9,7 +9,7 @@ from utils.ip import get_next_ip
 from utils.login import login
 from utils.logout import logout
 from utils.ping import wait_for_ping
-from utils.prompts import confirm, prompt_for_config
+from utils.prompts import confirm, prompt_for_config, confirm_config
 from utils.reset import reset_ilo
 from utils.sys import exit_with_code
 
@@ -38,10 +38,10 @@ def main(config: dict) -> None:
     try:
         if not bool(config['current_ip']):
             prompt_for_config(config)
-        if not wait_for_ping(ilo_ip):
-            if confirm(f'Unable to reach the iLO at {ilo_ip}. Do you want to try again?'):
-                return main(config)
-        if confirm(f'Push the following configuration? (y or n):\n {config}\n'):
+        if confirm_config(config):       
+            if not wait_for_ping(ilo_ip):
+                if confirm(f'Unable to reach the iLO at {ilo_ip}. Do you want to try again?'):
+                    return main(config)
             login_response: Response = login(config)
             config_session(config, login_response)
             create_user(config)
