@@ -9,7 +9,7 @@ def set_hostname(config: dict) -> Response:
     hostname_url: str = f'https://{ilo_ip}/json/network_general'
     current_hostname_config: dict = requests.get(hostname_url, headers = ilo_headers, verify = False).json()
     hostname_payload: dict = current_hostname_config | {
-        'dns_name': config['hostname'],
+        'dns_name': config['current_hostname'],
         'domain_name': config['domain_name'],
         'method': 'set_general',
         'session_key': token

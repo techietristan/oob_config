@@ -42,6 +42,7 @@ def main(config: dict) -> None:
             if not wait_for_ping(ilo_ip):
                 if confirm(f'Unable to reach the iLO at {ilo_ip}. Do you want to try again?'):
                     return main(config)
+            #todo: show config status
             login_response: Response = login(config)
             config_session(config, login_response)
             create_user(config)
