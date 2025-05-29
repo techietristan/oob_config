@@ -1,10 +1,11 @@
 from ipaddress import IPv4Address as ipv4
 from ipaddress import ip_address as get_ip
-from ipaddress import ip_network, AddressValueError
+from ipaddress import ip_network, AddressValueError, IPv4Network
+from typing import Callable
 
 def is_valid_ip(ip_address: str) -> bool:
     try:
-        ipv4(ip_address)
+        ipv4(ip_address.strip())
     except AddressValueError:
         return False
     
@@ -21,6 +22,19 @@ def is_valid_subnet_mask(subnet_mask: str) -> bool:
     else:
         return False
 
+def get_subnet(ip_address: str, subnet_mask: str) -> IPv4Network:
+    subnet: IPv4Network = ip_network(f'{ip_address}/{subnet_mask}', strict = False)
+
+    return subnet
+
+def get_gateway_validator(ip_address: str, subnet_mask: str) -> Callable:
+    subnet: IPv4Network = get_subnet(ip_address, subnet_mask)
+    def gateway_is_valid(gateway_address: str) -> bool:
+        default_gateway: ipv4 = get_ip(gateway_address)
+        return bool(default_gateway in subnet.hosts() and ip_address != gateway_address)
+    
+    return gateway_is_valid
+
 def get_next_ip(ip_address: str) -> str:
     if not is_valid_ip(ip_address):
         return False
@@ -35,3 +49,9 @@ def get_subnet_mask(subnet_mask: str) -> str:
         return str(ip_network(f'0.0.0.0/{stripped_subnet_mask}', strict = True).netmask)
     else:
         return False
+
+def get_default_gateway(ip_address: str, subnet_mask: str) -> str:
+    subnet: IPv4Network = get_subnet(ip_address, subnet_mask)
+    default_gateway: str = str(next(subnet.hosts()))
+
+    return default_gateway

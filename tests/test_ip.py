@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from utils.ip import is_valid_ip, is_valid_subnet_mask, get_next_ip, get_subnet_mask
+from utils.ip import is_valid_ip, is_valid_subnet_mask, get_gateway_validator, get_next_ip, get_subnet_mask, get_default_gateway
 
 class TestIsValidIp(TestCase):
     def test_returns_false_for_invalid_ip(self):
@@ -40,6 +40,18 @@ class TestIsValidSubnetMask(TestCase):
         self.assertTrue(is_valid_subnet_mask(' 2 '))
         self.assertTrue(is_valid_subnet_mask(' 24 '))
 
+class TestGetGatewayValidator(TestCase):
+    def test_gateway_validator_returns_false_for_invalid_input(self):
+        self.assertFalse(get_gateway_validator('192.168.0.130', '27')('192.168.0.10'))
+        self.assertFalse(get_gateway_validator('192.168.0.130', '27')('192.168.0.128'))
+        self.assertFalse(get_gateway_validator('192.168.0.130', '27')('192.168.0.159'))
+        self.assertFalse(get_gateway_validator('192.168.0.130', '27')('192.168.0.255'))
+        self.assertFalse(get_gateway_validator('192.168.0.130', '27')('192.168.0.130'))
+
+    def test_gateway_validator_returns_true_for_valid_input(self):
+        self.assertTrue(get_gateway_validator('192.168.0.130', '27')('192.168.0.129'))
+        self.assertTrue(get_gateway_validator('192.168.0.130', '27')('192.168.0.158'))
+
 class TestGetNextIp(TestCase):
     def test_returns_false_if_ip_invalid(self):
         self.assertFalse(get_next_ip('not_valid_ip123'))
@@ -70,3 +82,9 @@ class TestGetSubnetMask(TestCase):
         self.assertEqual(get_subnet_mask(' 255.255.255.0'), '255.255.255.0')
         self.assertEqual(get_subnet_mask('255.255.255.0 '), '255.255.255.0')
         self.assertEqual(get_subnet_mask('255.255.255.252'), '255.255.255.252')
+
+class TestGetDefaultGateway(TestCase):
+    def test_returns_correct_default_gateway(self):
+        self.assertEqual(get_default_gateway('192.168.1.100', '255.255.255.0'), '192.168.1.1')
+        self.assertEqual(get_default_gateway('10.0.0.10', '255.0.0.0'), '10.0.0.1')
+        self.assertEqual(get_default_gateway('192.168.0.130', '255.255.255.224'), '192.168.0.129')

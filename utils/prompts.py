@@ -1,6 +1,6 @@
 from getpass import getpass
 from typing import Callable
-from utils.ip import is_valid_ip, is_valid_subnet_mask, get_subnet_mask
+from utils.ip import is_valid_ip, is_valid_subnet_mask, get_gateway_validator, get_subnet_mask, get_default_gateway
 
 def confirm(confirm_prompt: str = '') -> bool:
     user_response = input(confirm_prompt).lower().strip()
@@ -19,13 +19,13 @@ def prompt(
         formatter: bool | Callable = False, 
         password: bool = False, 
         default: str = '') -> str:
-    user_input: str = input(prompt_text) if not password else getpass(prompt_text)
+    user_input: str = input(prompt_text).strip() if not password else getpass(prompt_text).strip()
     if user_input == '' and bool(default):
         return default
     if not bool(validate) or validate(user_input):
         if bool(formatter):
             return formatter(user_input)
-        return user_input.strip()
+        return user_input
     else:
         if bool(error_message):
             print(error_message)
@@ -39,11 +39,15 @@ def prompt_for_config(config: dict) -> None:
     config['current_hostname'] = prompt('Please enter the hostname to set for the iLO: ')
     config['subnet_mask'] = prompt(
         'Please enter the subnet mask to set for the iLO: ',
-        'Invalid subnet mask, please try again.', validate = is_valid_subnet_mask, formatter = get_subnet_mask)
-    #todo: gateway default and verify functions
+        'Invalid subnet mask, please try again.', 
+        validate = is_valid_subnet_mask, 
+        formatter = get_subnet_mask)
+    gateway_guess: str = get_default_gateway(config['current_ip'], config['subnet_mask'])
     config['default_gateway'] = prompt(
-        'Please enter the default gateway to set for the iLO: ',
-        'Invalid IP, please try again', validate = is_valid_ip)
+        f'Please enter the default gateway to set for the iLO (press Enter to use {gateway_guess}): ',
+        'Invalid default gateway, please try again', 
+        validate = get_gateway_validator(config['current_ip'], config['subnet_mask']),
+        default = gateway_guess)
     config['domain_name'] = prompt('Please enter the domain name to set for the iLO: ')
     config['username'] = prompt('Please enter the username to set for the iLO: ')
     #todo: password confirm
