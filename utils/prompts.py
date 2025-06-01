@@ -13,55 +13,67 @@ def confirm(confirm_prompt: str = '') -> bool:
 
     return True if response_is_positive else False if response_is_negative else confirm(confirm_prompt = invalid_response_prompt)
 
-def prompt(config: dict,
+def get_password(prompt_text: str) -> str:
+    password: str = getpass(prompt_text).strip()
+    password_confirm: str = getpass('Please enter the password again: ').strip()
+    if bool(password == password_confirm):
+        return password
+    else:
+        print('Passwords do not match, please try again.')
+        return get_password(prompt_text)
+
+def prompt_and_update(config: dict,
+        config_item: str,
         prompt_text: str, 
         error_message: str = '', 
         validate: bool | Callable = False, 
         formatter: bool | Callable = False, 
         password: bool = False, 
-        default: str = '') -> str:
-    user_input: str = input(prompt_text).strip() if not password else getpass(prompt_text).strip()
-    if bool(password):
-        password_confirm: str = getpass('Please enter the password again: ').strip()
-        if bool(user_input == password_confirm):
-            return user_input
-        else:
-            print('Passwords do not match, please try again.')
-            return prompt(config,prompt_text, password = True)
-        
+        default: str = '') -> None:
+    if bool(config[config_item]):
+        user_input: str = config[config_item].strip()
+    elif bool(password):
+        user_input: str = get_password(prompt_text)
+    else:
+        user_input: str = input(prompt_text).strip()
     if user_input == '' and bool(default):
-        return default
+        config[config_item] = default
+        return
     if not bool(validate) or validate(user_input):
         if bool(formatter):
-            return formatter(config, user_input)
-        return user_input
+            config[config_item] = formatter(config, user_input)
+            return
+        else:
+            config[config_item] = user_input
+            return
     else:
         if bool(error_message):
             print(error_message)
-        return prompt(config, prompt_text, error_message, validate, formatter, password, default)
+        return prompt(config, config_item, prompt_text, error_message, validate, formatter, password, default)
 
 def prompt_for_config(config: dict) -> None:
     print('Welcome to the Out-of-Band configuration script!')
-    config['current_ip'] = prompt(config,
+    prompt_and_update(config, 'current_ip', 
         'Please enter the static IP to set for the iLO: ', 
-        'Invalid IP, please try again.', validate = is_valid_ip).strip()
-    config['current_hostname'] = prompt(config,
+        'Invalid IP, please try again.', validate = is_valid_ip)
+    prompt_and_update(config, 'current_hostname', 
         'Please enter the hostname to set for the iLO: ',
         formatter = format_hostname)
-    config['subnet_mask'] = prompt(config,
+    prompt_and_update(config, 'subnet_mask', 
         'Please enter the subnet mask to set for the iLO (dotted decimal or CIDR format): ',
         'Invalid subnet mask, please try again.', 
         validate = is_valid_subnet_mask, 
         formatter = get_subnet_mask)
     gateway_guess: str = get_default_gateway(config['current_ip'], config['subnet_mask'])
-    config['default_gateway'] = prompt(config,
+    is_valid_gateway: Callable = get_gateway_validator(config['current_ip'], config['subnet_mask'])
+    prompt_and_update(config, 'default_gateway', 
         f'Please enter the default gateway to set for the iLO (press Enter to use {gateway_guess}): ',
         'Invalid default gateway, please try again', 
-        validate = get_gateway_validator(config['current_ip'], config['subnet_mask']),
+        validate = is_valid_gateway,
         default = gateway_guess)
-    config['domain_name'] = prompt(config,'Please enter the domain name to set for the iLO: ')
-    config['username'] = prompt(config,'Please enter the username to set for the iLO: ')
-    config['password'] = prompt(config,'Please enter the password to set for the iLO: ', password = True)
+    prompt_and_update(config, 'domain_name', 'Please enter the domain name to set for the iLO: ')
+    prompt_and_update(config, 'username', 'Please enter the username to set for the iLO: ')
+    prompt_and_update(config, 'password', 'Please enter the password to set for the iLO: ', password = True)
 
 def confirm_config(config: dict) -> bool:
     print(f'\nDo you want to push the following config to the currently connected iLO?\n\n\t',

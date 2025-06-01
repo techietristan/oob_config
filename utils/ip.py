@@ -29,11 +29,11 @@ def get_subnet(ip_address: str, subnet_mask: str) -> IPv4Network:
 
 def get_gateway_validator(ip_address: str, subnet_mask: str) -> Callable:
     subnet: IPv4Network = get_subnet(ip_address, subnet_mask)
-    def gateway_is_valid(gateway_address: str) -> bool:
+    def is_valid_gateway(gateway_address: str) -> bool:
         default_gateway: ipv4 = get_ip(gateway_address)
         return bool(default_gateway in subnet.hosts() and ip_address != gateway_address)
     
-    return gateway_is_valid
+    return is_valid_gateway
 
 def get_next_ip(ip_address: str) -> str:
     if not is_valid_ip(ip_address):

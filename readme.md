@@ -32,7 +32,7 @@ python3 .
 ```
 **Note**: Ensure that you have navigated to the script's directory in your terminal before running this command.
 
-Supply the configuration for the first iLO and enter `y` to confirm the information is correct.
+Supply the configuration for the first iLO and enter 'y' to confirm the information is correct.
 
 **Note**: 
 * iLO default passwords are unique to each server and can be found on a sticker on top of the chassis and usually on a pull-out tab on the front of the server as well. You will be prompted to enter (or scan) the password for the currently connected iLO for each configuration.
@@ -61,4 +61,4 @@ Do you want to push the following config to the currently connected iLO?
 	
 (y or n): y
 ```
-Once the configuration is successfully pushed to the iLO, the hostname and IP address will automatically be incremented and you'll be prompted to connect to the next iLO
+Once the configuration is successfully pushed to the iLO, the hostname and IP address will automatically be incremented and you'll be prompted to connect to the next iLO. In this example, the hostname would be incremented to `test_hostname002-r` and the IP address to `192.168.1.131`.
