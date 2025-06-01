@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from utils.hostname import get_next_hostname
-from utils.hostname import get_next_letter
+from utils.hostname import get_next_letter, get_next_hostname, get_bare_hostname, format_case, format_hostname
 
 test_config: dict = {
     'hostname_suffix': '-r',
+    'enforce_case': 'lower',
     'hosts_in_series': 4
 }
 
@@ -69,3 +69,77 @@ class TestGetNextHostname(TestCase):
         test_wrap_around_config: dict = {'hosts_in_series' : 0, 'hostname_suffix': '-r'}
         actual_hostname: str = get_next_hostname(test_wrap_around_config, test_hostname)
         self.assertEqual(actual_hostname, expected_hostname)
+
+class TestGetBareHostname(TestCase):
+    def test_returns_bare_hostname(self):
+        self.assertEqual(get_bare_hostname(test_config, 'hostname-r'), 'hostname')
+        self.assertEqual(get_bare_hostname(test_config, 'HOSTNAME-R'), 'HOSTNAME')
+        self.assertEqual(get_bare_hostname(test_config, 'hostname-R'), 'hostname')
+        self.assertEqual(get_bare_hostname(test_config, 'HOSTNAME-r'), 'HOSTNAME')
+        self.assertEqual(get_bare_hostname(test_config, 'host-r-name'), 'host-r-name')
+
+class TestFormatCase(TestCase):
+    test_config_no_case: dict = test_config | {
+        'enforce_case': 'none'
+    }
+
+    test_config_enforce_upper: dict = test_config | {
+        'enforce_case': 'upper'
+    }
+
+    def test_returns_lower(self):
+        self.assertEqual(format_case(test_config, 'hostname'), 'hostname')
+        self.assertEqual(format_case(test_config, 'HOSTNAME '), 'hostname')
+        self.assertEqual(format_case(test_config, 'hOsTnAmE'), 'hostname')
+
+    def test_returns_same(self):
+        self.assertEqual(format_case(self.test_config_no_case, 'hostname'), 'hostname')
+        self.assertEqual(format_case(self.test_config_no_case, 'HOSTNAME'), 'HOSTNAME')
+        self.assertEqual(format_case(self.test_config_no_case, ' hOsTnAmE '), 'hOsTnAmE')
+
+    def test_returns_upper(self):
+        self.assertEqual(format_case(self.test_config_enforce_upper, 'hostname'), 'HOSTNAME')
+        self.assertEqual(format_case(self.test_config_enforce_upper, 'HOSTNAME'), 'HOSTNAME')
+        self.assertEqual(format_case(self.test_config_enforce_upper, ' hOsTnAmE'), 'HOSTNAME')
+
+class TestFormatHostname(TestCase):
+    test_config_no_case: dict = test_config | {
+        'enforce_case': 'none'
+    }
+
+    test_config_enforce_upper: dict = test_config | {
+        'enforce_case': 'upper'
+    }
+
+    test_config_no_suffix: dict = test_config | {
+        'hostname_suffix': ''
+    }
+
+    test_config_different_suffix: dict = test_config | {
+        'hostname_suffix': '-s'
+    }
+
+    def test_returns_lower_case(self):
+        self.assertEqual(format_hostname(test_config, 'TestHostname-r'), 'testhostname-r')
+        self.assertEqual(format_hostname(test_config, 'TESTHOSTNAME-R'), 'testhostname-r')
+        self.assertEqual(format_hostname(test_config, 'TESTHOSTNAME'), 'testhostname-r')
+    
+    def test_returns_upper_case(self):
+        self.assertEqual(format_hostname(self.test_config_enforce_upper, 'TestHostname-r'), 'TESTHOSTNAME-R')
+        self.assertEqual(format_hostname(self.test_config_enforce_upper, 'TESTHOSTNAME-r'), 'TESTHOSTNAME-R')
+        self.assertEqual(format_hostname(self.test_config_enforce_upper, 'testhostname'), 'TESTHOSTNAME-R')
+
+    def test_returns_same_case(self):
+        self.assertEqual(format_hostname(self.test_config_no_case, 'TestHostname-r'), 'TestHostname-r')
+        self.assertEqual(format_hostname(self.test_config_no_case, 'TESTHOSTNAME-R'), 'TESTHOSTNAME-r')
+        self.assertEqual(format_hostname(self.test_config_no_case, 'testhostname'), 'testhostname-r')
+    
+    def test_returns_same_suffix(self):
+        self.assertEqual(format_hostname(self.test_config_no_suffix, 'TestHostname-s'), 'testhostname-s')
+        self.assertEqual(format_hostname(self.test_config_no_suffix, 'TESTHOSTNAME-R'), 'testhostname-r')
+        self.assertEqual(format_hostname(self.test_config_no_suffix, 'TESTHOSTNAME'), 'testhostname')
+
+    def test_returns_different_suffix(self):
+        self.assertEqual(format_hostname(self.test_config_different_suffix, 'TestHostname-s'), 'testhostname-s')
+        self.assertEqual(format_hostname(self.test_config_different_suffix, 'TESTHOSTNAME-S'), 'testhostname-s')
+        self.assertEqual(format_hostname(self.test_config_different_suffix, 'TESTHOSTNAME'), 'testhostname-s')

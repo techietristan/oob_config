@@ -64,24 +64,24 @@ class TestGetNextIp(TestCase):
 
 class TestGetSubnetMask(TestCase):
     def test_returns_false_if_invalid_subnet_format(self):
-        self.assertFalse(get_subnet_mask('192.168.1.1'))
-        self.assertFalse(get_subnet_mask('0.0.0.225'))
-        self.assertFalse(get_subnet_mask('0.2'))
-        self.assertFalse(get_subnet_mask('0'))
-        self.assertFalse(get_subnet_mask('33'))
-        self.assertFalse(get_subnet_mask('this is a string'))
+        self.assertFalse(get_subnet_mask({}, '192.168.1.1'))
+        self.assertFalse(get_subnet_mask({}, '0.0.0.225'))
+        self.assertFalse(get_subnet_mask({}, '0.2'))
+        self.assertFalse(get_subnet_mask({}, '0'))
+        self.assertFalse(get_subnet_mask({}, '33'))
+        self.assertFalse(get_subnet_mask({}, 'this is a string'))
     
     def test_returns_correct_subnet_if_valid_subnet_format(self):
-        self.assertEqual(get_subnet_mask('24'), '255.255.255.0')
-        self.assertEqual(get_subnet_mask('/24'), '255.255.255.0')
-        self.assertEqual(get_subnet_mask('/27'), '255.255.255.224')
-        self.assertEqual(get_subnet_mask(' /28 '), '255.255.255.240')
-        self.assertEqual(get_subnet_mask('30 '), '255.255.255.252')
-        self.assertEqual(get_subnet_mask('/24'), '255.255.255.0')
-        self.assertEqual(get_subnet_mask(' 255.255.255.0'), '255.255.255.0')
-        self.assertEqual(get_subnet_mask(' 255.255.255.0'), '255.255.255.0')
-        self.assertEqual(get_subnet_mask('255.255.255.0 '), '255.255.255.0')
-        self.assertEqual(get_subnet_mask('255.255.255.252'), '255.255.255.252')
+        self.assertEqual(get_subnet_mask({}, '24'), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, '/24'), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, '/27'), '255.255.255.224')
+        self.assertEqual(get_subnet_mask({}, ' /28 '), '255.255.255.240')
+        self.assertEqual(get_subnet_mask({}, '30 '), '255.255.255.252')
+        self.assertEqual(get_subnet_mask({}, '/24'), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, ' 255.255.255.0'), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, ' 255.255.255.0'), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, '255.255.255.0 '), '255.255.255.0')
+        self.assertEqual(get_subnet_mask({}, '255.255.255.252'), '255.255.255.252')
 
 class TestGetDefaultGateway(TestCase):
     def test_returns_correct_default_gateway(self):

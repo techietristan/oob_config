@@ -1,5 +1,6 @@
 from getpass import getpass
 from typing import Callable
+from utils.hostname import format_hostname
 from utils.ip import is_valid_ip, is_valid_subnet_mask, get_gateway_validator, get_subnet_mask, get_default_gateway
 
 def confirm(confirm_prompt: str = '') -> bool:
@@ -12,7 +13,7 @@ def confirm(confirm_prompt: str = '') -> bool:
 
     return True if response_is_positive else False if response_is_negative else confirm(confirm_prompt = invalid_response_prompt)
 
-def prompt(
+def prompt(config: dict,
         prompt_text: str, 
         error_message: str = '', 
         validate: bool | Callable = False, 
@@ -26,39 +27,41 @@ def prompt(
             return user_input
         else:
             print('Passwords do not match, please try again.')
-            return prompt(prompt_text, password = True)
+            return prompt(config,prompt_text, password = True)
         
     if user_input == '' and bool(default):
         return default
     if not bool(validate) or validate(user_input):
         if bool(formatter):
-            return formatter(user_input)
+            return formatter(config, user_input)
         return user_input
     else:
         if bool(error_message):
             print(error_message)
-        return prompt(prompt_text, error_message, validate, formatter, password, default)
+        return prompt(config, prompt_text, error_message, validate, formatter, password, default)
 
 def prompt_for_config(config: dict) -> None:
-    print('Welcome to the iLO configuration script!')
-    config['current_ip'] = prompt(
+    print('Welcome to the Out-of-Band configuration script!')
+    config['current_ip'] = prompt(config,
         'Please enter the static IP to set for the iLO: ', 
         'Invalid IP, please try again.', validate = is_valid_ip).strip()
-    config['current_hostname'] = prompt('Please enter the hostname to set for the iLO: ')
-    config['subnet_mask'] = prompt(
+    config['current_hostname'] = prompt(config,
+        'Please enter the hostname to set for the iLO: ',
+        formatter = format_hostname)
+    config['subnet_mask'] = prompt(config,
         'Please enter the subnet mask to set for the iLO (dotted decimal or CIDR format): ',
         'Invalid subnet mask, please try again.', 
         validate = is_valid_subnet_mask, 
         formatter = get_subnet_mask)
     gateway_guess: str = get_default_gateway(config['current_ip'], config['subnet_mask'])
-    config['default_gateway'] = prompt(
+    config['default_gateway'] = prompt(config,
         f'Please enter the default gateway to set for the iLO (press Enter to use {gateway_guess}): ',
         'Invalid default gateway, please try again', 
         validate = get_gateway_validator(config['current_ip'], config['subnet_mask']),
         default = gateway_guess)
-    config['domain_name'] = prompt('Please enter the domain name to set for the iLO: ')
-    config['username'] = prompt('Please enter the username to set for the iLO: ')
-    config['password'] = prompt('Please enter the password to set for the iLO: ', password = True)
+    config['domain_name'] = prompt(config,'Please enter the domain name to set for the iLO: ')
+    config['username'] = prompt(config,'Please enter the username to set for the iLO: ')
+    config['password'] = prompt(config,'Please enter the password to set for the iLO: ', password = True)
 
 def confirm_config(config: dict) -> bool:
     print(f'\nDo you want to push the following config to the currently connected iLO?\n\n\t',

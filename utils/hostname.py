@@ -45,3 +45,24 @@ def get_next_hostname(config: dict, current_hostname: str) -> str:
     next_hostname: str = f'{hostname_prefix}{padded_next_digits}{next_letter}{hostname_suffix}'
 
     return next_hostname
+
+def get_bare_hostname(config: dict, hostname: str) -> str:
+    suffix: str = config['hostname_suffix'].strip()
+    bare_hostname: str = re.sub(rf'{suffix}$', '', hostname, flags = re.IGNORECASE)
+
+    return bare_hostname
+
+def format_case(config: dict, hostname: str) -> str:
+    case: str = config['enforce_case'].lower()
+    if case == 'lower':
+        return hostname.strip().lower()
+    if case == 'upper':
+        return hostname.strip().upper()
+    return hostname.strip()
+
+def format_hostname(config: dict, hostname: str) -> str:
+    suffix: str = config['hostname_suffix'].strip()
+    bare_hostname: str = get_bare_hostname(config, hostname)
+    formatted_hostname: str = format_case(config, f'{bare_hostname}{suffix}')
+    
+    return formatted_hostname

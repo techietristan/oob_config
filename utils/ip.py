@@ -43,7 +43,7 @@ def get_next_ip(ip_address: str) -> str:
 
     return next_ip_address
 
-def get_subnet_mask(subnet_mask: str) -> str:
+def get_subnet_mask(config: dict, subnet_mask: str) -> str:
     stripped_subnet_mask: str = subnet_mask.strip().strip('/')
     if is_valid_subnet_mask(stripped_subnet_mask):
         return str(ip_network(f'0.0.0.0/{stripped_subnet_mask}', strict = True).netmask)

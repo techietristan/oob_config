@@ -20,6 +20,7 @@ config: dict = {
     'ilo_username': 'Administrator',
     'ilo_headers': { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Connection': 'keep-alive' },
     'hostname_suffix': '-r',
+    'enforce_case': 'lower',
     'hosts_in_series': 0,
     'session_uri': '',
     'token': '',
