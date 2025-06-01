@@ -76,6 +76,9 @@ def prompt_for_config(config: dict) -> None:
     prompt_and_update(config, 'password', 'Please enter the password to set for the iLO: ', password = True)
 
 def confirm_config(config: dict) -> bool:
+    if not bool(config['confirm']):
+        return True
+        
     print(f'\nDo you want to push the following config to the currently connected iLO?\n\n\t',
     f'Static IP: {config['current_ip']}\n\t',
     f'Hostname: {config['current_hostname']}\n\t',

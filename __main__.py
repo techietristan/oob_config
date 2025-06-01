@@ -1,6 +1,9 @@
+from argparse import Namespace
+from sys import argv
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 
+from utils.args import parse_args, update_default_config
 from utils.config_network import config_network
 from utils.config_session import config_session
 from utils.create_user import create_user
@@ -15,7 +18,7 @@ from utils.sys import exit_with_code
 
 disable_warnings(InsecureRequestWarning)
 
-config: dict = {
+default_config: dict = {
     'ilo_ip': '169.254.1.2',
     'ilo_username': 'Administrator',
     'ilo_headers': { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Connection': 'keep-alive' },
@@ -24,22 +27,16 @@ config: dict = {
     'hosts_in_series': 0,
     'session_uri': '',
     'token': '',
-    'current_ip': '',
-    'current_hostname': '',
-    'subnet_mask': '',
-    'default_gateway': '',
-    'domain_name': '',
-    'username': '',
-    'password': '',
-    'debug': False
 }
 
-def main(config: dict) -> None:
+def main(config: dict = {}) -> None:
+    args: Namespace = parse_args(argv)
+    config: dict = update_default_config(default_config, args)
     ilo_ip: str = config['ilo_ip']
     try:
         if not bool(config['current_ip']):
             prompt_for_config(config)
-        if confirm_config(config):       
+        if bool(config['confirm']) and confirm_config(config):
             if not wait_for_ping(ilo_ip):
                 if confirm(f'Unable to reach the iLO at {ilo_ip}. Do you want to try again?'):
                     return main(config)
@@ -62,4 +59,4 @@ def main(config: dict) -> None:
         exit_with_code(130)
 
 if __name__ == '__main__':
-    main(config)
+    main()
