@@ -17,8 +17,8 @@ winget install -e --id Python.Python.3.11
 
 From a terminal, clone the repository and `cd` into its directory:
 ```
-> git clone https://github.com/techietristan/cohesity_ipmi_config.git
-> cd cohesity_ipmi_config
+> git clone https://github.com/techietristan/oob_config.git
+> cd oob_config
 ```
 Install any modules required by the script:
 ```
